@@ -14,10 +14,10 @@
 # limitations under the License.
 
 # This variable lists symbols to define to the C preprocessor
-export DEFINES := PLACEHOLDER
+export DEFINES :=
 
-# Uncomment this line to use software defined CFU
-# DEFINES += CFU_SOFTWARE_DEFINED
+# Uncomment this line to use software defined CFU functions in software_cfu.cc
+#DEFINES += CFU_SOFTWARE_DEFINED
 
 # Uncomment this line to skip debug code (large effect on performance)
 DEFINES += NDEBUG
@@ -29,7 +29,7 @@ DEFINES += NDEBUG
 DEFINES += INCLUDE_MODEL_PDTI8
 #DEFINES += INCLUDE_MODEL_MICRO_SPEECH
 #DEFINES += INCLUDE_MODEL_MAGIC_WAND
-DEFINES += INCLUDE_MODEL_MNV2
+#DEFINES += INCLUDE_MODEL_MNV2
 #DEFINES += INCLUDE_MODEL_HPS
 #DEFINES += INLCUDE_MODEL_MLCOMMONS_TINY_V01_ANOMD
 #DEFINES += INLCUDE_MODEL_MLCOMMONS_TINY_V01_IMGC
@@ -37,9 +37,6 @@ DEFINES += INCLUDE_MODEL_MNV2
 #DEFINES += INLCUDE_MODEL_MLCOMMONS_TINY_V01_VWW
 
 # Uncomment to include all TFLM examples (pdti8, micro_speech, magic_wand)
-DEFINES += INCLUDE_ALL_TFLM_EXAMPLES
-
-# Tests are in implementation files in this project
-PYTEST_PATTERN := '*.py'
+#DEFINES += INCLUDE_ALL_TFLM_EXAMPLES
 
 include ../proj.mk
