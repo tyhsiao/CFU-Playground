@@ -40,3 +40,7 @@ DEFINES += INLCUDE_MODEL_MLCOMMONS_TINY_V01_VWW
 #DEFINES += INCLUDE_ALL_TFLM_EXAMPLES
 
 include ../proj.mk
+
+
+# For VCD waveform Output
+# ENABLE_TRACE_ARG=--trace

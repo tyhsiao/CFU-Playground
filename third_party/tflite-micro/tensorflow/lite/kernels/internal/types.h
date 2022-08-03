@@ -19,6 +19,7 @@ limitations under the License.
 #include <cstdint>
 #include <cstring>
 #include <initializer_list>
+#include <cstdio>
 
 #include "tensorflow/lite/kernels/internal/compatibility.h"
 #include "tensorflow/lite/kernels/internal/runtime_shape.h"
