@@ -14,6 +14,7 @@ module Cfu (
 
 localparam FILTER_DATA_SIZE = 65536;
 localparam INPUT_DATA_SIZE = 18435;
+localparam DATA_LEN = 8;
 
 // Dismantle Function Code
 wire [6:0] func7;
@@ -42,6 +43,28 @@ end
 assign cmd_ready = ( ~rsp_valid && ~acc_start && ~cal_finish) ;
 
 
+
+//***** SRAM *****//
+// sram #( .DATA_LEN(DATA_LEN), .N_ENTRIES(FILTER_DATA_SIZE) )
+//       FILTER_BRAM(
+//           .clk(clk),
+//           .en_i(1'b1),
+//           .we_i(1),
+//           .addr_i(1),
+//           .data_i(1),
+//           .data_o(1)
+//       );
+
+// sram #( .DATA_LEN(DATA_LEN), .N_ENTRIES(INPUT_DATA_SIZE) )
+//       DATA_BRAM(
+//           .clk(clk),
+//           .en_i(1'b1),
+//           .we_i(1),
+//           .addr_i(1),
+//           .data_i(1),
+//           .data_o(1)
+//       );      
+
 //***** Set Conv Parameters *****//
 reg signed [31:0] input_offset, input_height, input_width, input_batches, input_depth;
 reg signed [31:0] filter_input_depth, filter_height, filter_width, filter_output_depth;
@@ -49,7 +72,7 @@ reg signed [31:0] dilation_width_factor, dilation_height_factor;
 
 reg [6:0] param_index;
 
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if(reset || (cmd_valid && func7 == 7'd6)) begin
     input_offset <= 0;
     input_height <= 0;
@@ -109,7 +132,7 @@ end
 reg signed [31:0] in_x_origin, in_y_origin, batch, out_channel, group;
 reg [4:0] param2_index;
 
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if(reset || (func7 == 7'd8 && cmd_valid)) begin
     in_x_origin <= 0;
     in_y_origin <= 0;
@@ -156,7 +179,7 @@ wire cond1 , cond2;
 assign cond1 =  acc_start && (filter_y == filter_height - 1) && (filter_x == filter_width - 1) && ~is_point_inside_image;
 assign cond2 = acc_start && (filter_y == filter_height - 1) && (filter_x == filter_width - 1) && !cal_now && cal_now_delay ;
 
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if(reset | rsp_valid) cal_finish <= 0;
   else if ( cond1 | cond2 )cal_finish <= 1;
   else cal_finish <= cal_finish;
@@ -173,7 +196,7 @@ assign is_point_inside_image =
         (in_x >= 0) && (in_x < input_width) && (in_y >= 0) &&
         (in_y < input_height);
 
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if( reset ) acc_start <= 0;
   else if ( cond1 | cond2 | cal_finish)acc_start <= 0;
   else if (cmd_valid && func7 == 7'd10) acc_start <= 1;
@@ -181,7 +204,7 @@ always @(posedge clk) begin
 end
 
 // filter X
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if(reset) filter_x <= 0;
   else if (cmd_valid && func7 == 7'd8) filter_x <= 0;
   else if(acc_start) begin
@@ -196,7 +219,7 @@ always @(posedge clk) begin
 end
 
 // filter Y
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if(reset) filter_y <= 0;
   else if (cmd_valid && func7 == 7'd8) filter_y <= 0;
     
@@ -212,7 +235,7 @@ end
 
 // control signal to calculate
 
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if (reset) cal_now <= 0;
   else if(cond1 | cond2) cal_now <= 0;
   else if(in_channel == filter_input_depth - 1) cal_now <= 0;
@@ -222,7 +245,7 @@ always @(posedge clk) begin
 end
 
 // in_channel
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if(reset) in_channel <= 0;
   else if(cmd_valid && func7 == 7'd8) in_channel <= 0;
   else if(in_channel == filter_input_depth - 1) in_channel <= 0;
@@ -242,7 +265,7 @@ assign filter_index =
   ((((out_channel * filter_height + filter_y) * filter_width ) + filter_x) * filter_input_depth ) + (in_channel);
 
 
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if(reset) rsp_payload_outputs_0 <= 32'b0;
   else if( cmd_valid && func7 == 7'd8 ) rsp_payload_outputs_0 <= 32'b0;
   else if (cal_now) rsp_payload_outputs_0 <= rsp_payload_outputs_0 + prod_0;
@@ -260,7 +283,7 @@ assign prod_0 =  (($signed(input_data[input_index]) + $signed(input_offset))
 reg signed [7:0] filter_data [0:FILTER_DATA_SIZE];
 reg [31:0] cfilt;
 
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if (reset) begin 
     filter_data <= '{default: '0}; 
     cfilt <= 0;
@@ -298,7 +321,7 @@ end
 reg signed [7:0] input_data [0:INPUT_DATA_SIZE];
 reg [31:0] ifilt;
 
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
   if (reset) begin 
     input_data <= '{default: '0}; 
     ifilt <= 0;
