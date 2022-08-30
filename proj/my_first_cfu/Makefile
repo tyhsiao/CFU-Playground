@@ -43,4 +43,4 @@ include ../proj.mk
 
 
 # For VCD waveform Output
-# ENABLE_TRACE_ARG=--trace
+#ENABLE_TRACE_ARG=--trace
